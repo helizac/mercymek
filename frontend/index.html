@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mercymek</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23eef1f2' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23eef1f2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Courier+Prime&display=swap">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/mercy.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "three/addons/": "./vendor/addons/" } }</script>
+</head>
+<body>
+<div id="bokeh"></div>
+
+<div class="app" id="app">
+  <!-- LEFT: everything except the stage -->
+  <aside class="side">
+    <div class="side-top">
+      <div class="brand"><span class="ring"></span><b>mercymek</b></div>
+      <button class="mic" id="mic" title="Hold to talk (Space)" aria-label="Hold to talk">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/></svg>
+        <i class="conn" id="conn"></i>
+      </button>
+    </div>
+
+    <button class="case-pill" id="caseBtn" title="Cases"><b id="caseId">—</b><span id="caseTitle"></span></button>
+
+    <nav class="views-nav" id="viewNav">
+      <button data-view="video" class="on">Video</button>
+      <button data-view="scene">3D moments</button>
+      <button data-view="map">Map</button>
+      <button data-view="report">Report</button>
+      <button data-view="evidence">Evidence</button>
+    </nav>
+
+    <section class="info">
+      <div class="clock mono" id="camTs">T+0.00s</div>
+      <div class="delta mono" id="camDelta">IMPACT −0.00s</div>
+      <div class="facts">
+        <span>Camera</span><b id="camId">—</b>
+        <span>Location</span><b id="sideLoc">—</b>
+        <span>Conditions</span><b id="sideCond">—</b>
+      </div>
+    </section>
+
+    <div class="meter" id="meter" hidden>
+      <div class="row">
+        <div class="pct" id="meterPct">--%</div>
+        <div class="lbl"><span>liability</span><b id="meterWho">—</b><span id="meterRange"></span></div>
+        <i class="delta" id="meterDelta"></i>
+      </div>
+      <div class="mbar"><i id="meterBar"></i><b id="meterStart"></b></div>
+      <div class="ledger" id="ledger"></div>
+    </div>
+
+    <div class="whatif" id="whatif" hidden></div>
+
+    <section class="convo">
+      <div class="caption" id="caption"></div>
+      <div class="reply" id="reply"></div>
+      <div class="action" id="action"></div>
+    </section>
+  </aside>
+
+  <!-- RIGHT: the stage (90vh) and the timeline (6vh) -->
+  <main class="main">
+    <section class="stage" id="stage">
+      <section class="view on" id="v-video">
+        <div class="cam" id="camCard">
+          <div class="cam-frame" id="camFrame">
+            <div class="cam-stage" id="camStage">
+              <video id="video" muted playsinline preload="auto"></video>
+              <canvas id="overlay"></canvas>
+            </div>
+            <div id="arLayer"></div>
+          </div>
+        </div>
+        <aside class="enh" id="enh" hidden></aside>
+        <div class="replay" id="replay" hidden>
+          <video id="replayVid" muted playsinline loop></video>
+          <div class="rp-hud"><b>×4 slow motion</b><span>in-between frames reconstructed with optical flow</span><span class="mono" id="rpT">T</span></div>
+          <div class="rp-bar"><i id="rpBar"></i><b id="rpImpact"></b></div>
+        </div>
+      </section>
+
+      <section class="view" id="v-scene">
+        <canvas class="gl" id="gl"></canvas>
+        <canvas class="pip" id="pip" title="Video"></canvas>
+        <div class="scene-hud" id="hud3"></div>
+        <div class="scene-load" id="sceneLoad" hidden>loading the moment…</div>
+      </section>
+
+      <section class="view" id="v-map">
+        <div id="leaflet"></div>
+        <div class="loc-card glass" id="locCard"></div>
+        <div class="street glass" id="street" hidden></div>
+      </section>
+
+      <section class="view" id="v-report">
+        <div class="report-grid">
+          <div class="report-doc" id="tab-report"></div>
+          <div class="report-side">
+            <div class="glass side-card" id="faultCard"></div>
+            <div class="glass side-card" id="stmtCard"></div>
+            <div class="glass side-card" id="tab-measure"></div>
+            <div class="glass side-card" id="tab-blueprint"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="v-evidence">
+        <div class="ev-grid">
+          <article class="glass dossier" id="dossier1"></article>
+          <article class="glass dossier" id="dossier2"></article>
+          <article class="glass plates" id="platesCard"></article>
+          <article class="glass entities" id="entities"><div class="card-head"><span class="t">Entities</span><span class="sp"></span><span class="k" id="entCount"></span></div><div class="cloud" id="entCloud"></div></article>
+          <article class="glass files-card" id="tab-files"></article>
+        </div>
+      </section>
+    </section>
+
+    <footer class="transport" id="transport">
+      <button class="play" id="btnPlay" title="Play / pause (P)"><svg id="icoPlay" width="18" height="18" viewBox="0 0 16 16" fill="#fff"><path d="M4 2l10 6-10 6z"/></svg></button>
+      <div class="tl" id="tl">
+        <canvas id="tlCanvas"></canvas>
+        <div class="bar" id="tlBar"><div class="played" id="tlPlayed"></div></div>
+        <div id="tlPills"></div>
+        <div class="head" id="tlHead"></div>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<div class="palette" id="palette" hidden><input id="cmdInput" placeholder="type a command" spellcheck="false" autocomplete="off"></div>
+<div class="casesel" id="casesel" hidden></div>
+<div class="lightbox" id="lightbox" hidden></div>
+<div class="boot" id="boot"><div class="inner"><span class="ring"></span><div class="word">mercymek</div><div class="prog"><i id="bootProg"></i></div><div class="lines" id="bootLines"></div></div></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

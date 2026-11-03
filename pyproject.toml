@@ -1,0 +1,31 @@
+[project]
+name = "mercy"
+version = "1.0.0"
+description = "MERCY: voice-driven forensic crash-reconstruction cockpit (Meta Model API + Laya + VGGT)"
+requires-python = ">=3.11"
+dependencies = [
+  "openai>=1.60", "websockets>=13", "sounddevice", "fastapi", "uvicorn[standard]", "pydantic>=2",
+  "python-dotenv", "numpy", "scipy", "osqp==1.1.3", "clarabel==0.11.1", "opencv-python", "matplotlib", "rapidfuzz", "httpx",
+  "laya>=0.4", "meta-sam-parser>=0.0.6", "viser>=1.0", "huggingface_hub", "pillow", "cryptography",
+]
+
+[project.optional-dependencies]
+# Reconstruction runs in its own environment (.venv-recon) so the demo env stays light:
+#   uv venv --python 3.11 .venv-recon
+#   uv pip install --python .venv-recon torch torchvision --index-url https://download.pytorch.org/whl/xpu   # or cu124 / cpu
+#   uv pip install --python .venv-recon "vggt @ git+https://github.com/facebookresearch/vggt.git" numpy scipy opencv-python pillow huggingface_hub python-dotenv transformers
+recon = ["torch", "torchvision", "vggt @ git+https://github.com/facebookresearch/vggt.git", "transformers",
+         # AnySplat (git clone into vendor/AnySplat; inference only, its CUDA kernels are replaced by vendor/anysplat_shims)
+         "einops", "jaxtyping", "omegaconf", "plyfile", "dacite", "safetensors", "lightning", "scikit-video",
+         "matplotlib", "e3nn", "colorspacious", "open3d==0.19.0", "numpy<2"]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mercy*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
