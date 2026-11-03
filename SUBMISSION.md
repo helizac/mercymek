@@ -73,7 +73,7 @@ python scripts/run_demo.py --case hero --no-viser --open         # http://localh
 
 Without any key everything cached works: video, 3D moments, report, map, evidence, slow motion, what-if, statement,
 seal. Type a command with `/` (the typed command line) if there is no microphone.
-`python -m pytest` → 150 tests.
+`python -m pytest` → 155 tests.
 
 ## Honest limits
 
