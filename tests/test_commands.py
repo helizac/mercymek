@@ -51,3 +51,14 @@ def test_camera_playback_layers():
     assert C.playback_slots("pause")["playing"] is False
     assert C.layer_slots("hide the masks") == {"layer": "masks", "visible": False}
     assert C.note_text("note that the light was red") == "the light was red"
+
+
+@pytest.mark.parametrize("text", ["replay the approach", "show me the lead-up", "play the approach", "fly the run up"])
+def test_approach_replay_is_a_rule(text):
+    assert C.rule_intent(text) == "camera"
+    assert C.camera_slots(text) == {"camera_preset": "approach"}
+
+
+def test_approach_rule_leaves_other_replays_alone():
+    assert C.rule_intent("replay the impact in super slow motion") == "replay"
+    assert C.rule_intent("show the impact in 3D") == "view"

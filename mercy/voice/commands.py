@@ -149,7 +149,8 @@ def object_slots(c: str, extra_labels: dict[str, str]) -> dict:
 
 def camera_slots(c: str) -> dict:
     lc = c.lower()
-    for pat, preset in [(r"\bfree\b|walk|\bfly\b|explore|roam|look around|serbest|dolaş|gez", "free"),
+    for pat, preset in [(r"approach|lead.?up|run.?up", "approach"),
+                        (r"\bfree\b|walk|\bfly\b|explore|roam|look around|serbest|dolaş|gez", "free"),
                         (r"top|above|overhead|bird|üstten|kuş bakışı|yukarı", "top"),
                         (r"driver|first.person|dashcam view|sürücü|cockpit", "driver"),
                         (r"orbit|360|around|circle|etrafında|döndür|spin", "orbit"),
@@ -246,6 +247,8 @@ def slots_for(intent: str, clause: str, labels: dict[str, str]) -> dict:
 
 # High-precision keyword rules: consulted only when Laya is unsure, before paying for the Spark deep parse.
 RULES = [
+    # the approach replay: the lead-up to the crash flown through the reconstructed street ("Replay approach" button)
+    ("camera", r"\b(replay|play|run|show|watch|fly)\b.*\b(approach|lead.?up|run.?up)\b"),
     # mercy mode: the investigator argues a point; the judge weighs it against the evidence
     ("claim", r"^(objection|i (claim|argue|submit|contend|object|maintain)|my (client|argument|claim)|for the record|"
               r"in (his|her|their) defen[cs]e|consider that|the evidence shows|counter.?point)"),

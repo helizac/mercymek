@@ -464,6 +464,14 @@ async def execute(cmd: dict, ws: Optional[WebSocket]):
         m = c.moment_for(cmd.get("clause", ""), st.t)
         if not m:
             return "There are no 3D moments for this case."
+        if cmd.get("camera_preset") == "approach":
+            m = next((x for x in c.moments() if x.get("approach") and x["id"] == "impact"), None) \
+                or next((x for x in c.moments() if x.get("approach")), None)
+            if not m:
+                return "This case has no approach replay."
+            await hub.patch({"camera": "approach", "view": "scene", "moment": m["id"], "t": m["replay_start"],
+                             "playing": True, "speed": 0.5})
+            return "The approach, replayed through the reconstructed street."
         preset = "driver" if cmd.get("camera_preset") == "driver" else "orbit"   # a moment drifts, or holds the dashcam's view
         await hub.patch({"camera": preset, "view": "scene", "moment": m["id"], "t": m["t"], "playing": False})
         return "From the driver's seat." if preset == "driver" else f"{m['label']}, in 3D."

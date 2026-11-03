@@ -7,6 +7,8 @@ Meta Global AI Developer Hackathon · Indie track · theme **Build for Your Worl
 Talk to a dashcam clip and it becomes a crash investigation: the key instants rebuilt in 3D, the fault shares as honest
 ranges, the plates read, the accident statement filled in, the evidence sealed.
 
+![The approach replayed in 3D](docs/img/scene.png)
+
 ## The problem
 
 After a crash it is one driver's word against another's. A dashcam clip is the best evidence there is, but a clip is
@@ -21,6 +23,7 @@ You hold Space and talk. The video stays the main screen; every other screen is 
 | You say | You get |
 | --- | --- |
 | "Show the impact in 3D" | the instant of impact rebuilt as a Gaussian-splat world with full vehicle models on their tracked paths; fly through it |
+| "Replay the approach" | the lead-up replayed at half speed through the reconstructed street, cars on their tracked paths |
 | "Replay the impact in super slow motion" | ×4 slow motion with in-between frames reconstructed from optical flow |
 | "What if the camera car had been going 30 km/h?" | avoidance analysis as ranges: "At 30 km/h instead of 73, the camera car stops 23 to 25 metres before the impact point. The crash is avoided." |
 | "Who is at fault?" | Muse Wonder watches the clip and reads the measurements: fault shares as ranges with an integrity audit |
@@ -88,7 +91,7 @@ once so the splats are cached (first load takes ~15 s), then reload to `?case=he
 | --- | --- | --- |
 | 0:00–0:15 | Hero clip playing, the crash happens | Voice-over: "Every day two drivers argue about what a dashcam clip shows. mercymek turns the clip into an investigation you can talk to." |
 | 0:15–0:40 | Hold Space | **"Isolate the vehicles and rewind to three seconds before impact."** (masks light up both cars, the video jumps) |
-| 0:40–1:15 | 3D moments | **"Show the impact in 3D."** Orbit with the mouse, WASD through the scene, press *Dashcam view* to snap back to the real viewpoint. Voice-over: "The world is generated from the footage; the cars are complete models on their tracked paths." |
+| 0:40–1:15 | 3D moments | **"Show the impact in 3D."**, then **"Replay the approach."** — the lead-up flies through the reconstructed street with the cars on their tracked paths. Keep camera moves small (a gentle drag); wide orbits reveal what a single forward-facing clip never saw. Voice-over: "The world is generated from the footage; the cars are complete models on their tracked paths." |
 | 1:15–1:30 | Video | **"Replay the impact in super slow motion."** |
 | 1:30–1:50 | Video, what-if | **"What if the camera car had been going 30 km/h?"** — the answer is spoken, the clip replays from the hazard. |
 | 1:50–2:20 | Report | **"Who is at fault?"** — fault shares as ranges, integrity audit. Then (live): **"Objection: the blue car cut in without signalling."** and let the judge answer. |

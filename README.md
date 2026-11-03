@@ -5,6 +5,9 @@
 > sealed. Built on all five Meta Model API surfaces (Muse Voice Transcribe, Spark, Wonder, Image, SAM 3.1) plus VGGT.
 > Hackathon pitch, 3-minute video script and judge quick-start: [SUBMISSION.md](SUBMISSION.md).
 
+![3D approach replay](docs/img/scene.png)
+![Report](docs/img/report.png)
+
 **Quick start (no GPU, no API key):** `python scripts/pack_demo.py --unpack mercymek-demo-data.zip` (the demo data,
 released separately because one case is 370 MB), then `python scripts/run_demo.py --case hero --no-viser --open`.
 
@@ -48,6 +51,7 @@ follows the voice.
 | “Show the moment before impact in 3D”, “show the impact in 3D”, “show braking in 3D”, “show me 3D” | open that instant with complete vehicle meshes. Replay collision plays at half speed; the timeline scrubs the same replay. Drag to look, wheel/WASD to move, Q/E for height, right-drag to pan. Reset camera returns to the current video pose; Dashcam view follows the source camera explicitly |
 | “Driver view” | the moment held still at the dashcam's own viewpoint |
 | “Bullet time” | the impact moment in 3D |
+| “Replay the approach” | the lead-up replayed through the reconstructed street, cars on their tracked paths (same as the *Replay approach* button) |
 | “Replay the impact in super slow motion” | ×4 replay whose in-between frames are reconstructed with RAFT optical flow |
 | “What if the camera car had been going 30 km/h?”, “What if it braked a second earlier?”, “…on a wet road?” | avoidance analysis as ranges; the video replays from the hazard at half speed |
 | “Objection: the SUV cut in without signalling”, “I argue the camera car was tailgating” | Mercy mode: the judge weighs the argument against the evidence; if it holds, the liability meter moves |
