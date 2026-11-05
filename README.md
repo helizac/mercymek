@@ -43,20 +43,9 @@ the demo reuses the actual computed findings.
 
 *London demo: the inferred location, supporting visual clues and uncertainty.*
 
-## Three-minute demo
+## demo
 
-The finished film follows one London investigation: **ten real spoken commands**,
-plate reading, visual geolocation, what-if analysis, a brief in-app 3D view, the
-Evidence page, the report, statement and evidence verification.
-
-`deliverables/mercymek-3-minute-demo.mp4` is exactly **180 seconds**, 1080p at 30 fps,
-with English ElevenLabs narration and captions. Its `v6` edit number is separate
-from application version **1.0.0**.
-
-The film and prepared data are local delivery artifacts, excluded from Git.
-They must be uploaded as release assets for public download. See the
-[delivery guide](docs/delivery.md) for the files, credits and recording workflow,
-and [SUBMISSION.md](SUBMISSION.md) for the judging material.
+[mercymek demo](https://youtu.be/ydpZPlMyyG8)
 
 ## Quick start
 
