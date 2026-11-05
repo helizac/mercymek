@@ -1,3 +1,7 @@
+> Historical implementation notes. The v2/v3/v4 headings below name internal
+> development iterations, not published package versions. Public release history
+> and versioning live in [CHANGELOG.md](CHANGELOG.md) and [docs/releasing.md](docs/releasing.md).
+
 # Changes against the technical spec
 
 Where the spec and the live Meta Model API docs disagreed, the docs won (hard rule 3). Where this build deliberately

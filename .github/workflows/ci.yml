@@ -1,0 +1,36 @@
+name: Public source checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-dev.lock
+      - name: Public-source and history audit
+        run: python scripts/check_public_repo.py --history
+      - name: Release tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: python scripts/check_public_repo.py --expected-version "${GITHUB_REF_NAME}"
+      - name: System libraries
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libportaudio2 libgl1 libglib2.0-0
+      - name: CPU dependencies and tests
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes -r requirements-dev.lock
+          python -m pip install --no-deps -e ".[dev]"
+          python -m pip check
+          python -m pytest -q -ra

@@ -11,6 +11,23 @@ node_modules/
 # third-party clones (see README: git clone ... vendor/AnySplat, vendor/geo-sleuth); vendor/anysplat_shims is ours
 vendor/AnySplat/
 vendor/geo-sleuth/
-mercy-frontend-legacy-by-sonnet-not-wanted/
 *.zip
+deliverables/
 vendor/HY-World-2.0/
+
+# Local credentials, environments and build/test output
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.venv*/
+build/
+dist/
+.coverage
+.coverage.*
+htmlcov/
+*.log
+.DS_Store
+Thumbs.db

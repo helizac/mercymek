@@ -60,5 +60,9 @@ for (const type of VEHICLE_TYPES) {
   mesh.dispose();
 }
 await writeFile(path.join(dst, 'index.json'), JSON.stringify({ units:'metres', axes:'x right, y up, nose -z', models:index }, null, 2));
-await writeFile(path.join(dst, 'fit-points.json'), JSON.stringify({axes:'x right, y up, nose +z',models:fitPoints}));
+const fittingData=JSON.stringify({axes:'x right, y up, nose +z',models:fitPoints});
+await writeFile(path.join(dst, 'fit-points.json'), fittingData);
+// Small source asset required by Python fitting even in a checkout with no data/.
+const sourceAssets=path.join(root,'mercy','assets');await mkdir(sourceAssets,{recursive:true});
+await writeFile(path.join(sourceAssets,'vehicle-fit-points.json'), fittingData);
 console.log(`Saved ${index.length} reusable vehicle GLBs to ${dst}`);

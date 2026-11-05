@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import hashlib
 
 import httpx
 import pytest
@@ -59,3 +60,24 @@ def test_denied_probe_stops_retrying_without_disabling_speech(speaker, status):
     asyncio.run(run())
     assert len(requests) == 1
     assert speaker.enabled
+
+
+def test_cached_speech_plays_without_credentials_or_budget(speaker):
+    text = "Here is the evidence."
+    key = hashlib.sha1(f"{speaker.voice}|{speaker.model}|{text}".encode()).hexdigest()[:16]
+    (tts_module.CACHE / f"{key}.mp3").write_bytes(b"cached speech")
+    speaker.key = ""
+    speaker.budget = 0
+    assert speaker.register(text) == key
+
+    async def read():
+        return b"".join([part async for part in speaker.stream(key)])
+
+    assert asyncio.run(read()) == b"cached speech"
+    assert speaker.used == 0
+    assert speaker.client is None
+
+
+def test_uncached_speech_without_credentials_is_text_only(speaker):
+    speaker.key = ""
+    assert speaker.register("A new phrase.") is None

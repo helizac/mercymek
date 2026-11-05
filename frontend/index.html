@@ -62,6 +62,7 @@
       <div class="reply" id="reply"></div>
       <div class="action" id="action"></div>
     </section>
+    <button class="command-hint" id="commandHint" title="Open typed commands (/)">Hold <kbd>Space</kbd> to talk <span>·</span> <kbd>/</kbd> to type</button>
   </aside>
 
   <!-- RIGHT: the stage (90vh) and the timeline (6vh) -->
@@ -133,7 +134,7 @@
   </main>
 </div>
 
-<div class="palette" id="palette" hidden><input id="cmdInput" placeholder="type a command" spellcheck="false" autocomplete="off"></div>
+<div class="palette" id="palette" hidden><input id="cmdInput" aria-label="Command" placeholder="Try: show the impact in 3D" spellcheck="false" autocomplete="off"></div>
 <div class="casesel" id="casesel" hidden></div>
 <div class="lightbox" id="lightbox" hidden></div>
 <div class="boot" id="boot"><div class="inner"><span class="ring"></span><div class="word">mercymek</div><div class="prog"><i id="bootProg"></i></div><div class="lines" id="bootLines"></div></div></div>

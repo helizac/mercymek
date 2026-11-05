@@ -179,6 +179,7 @@ function hideReplay() { const b = $('#replay'); if (b.hidden) return; b.hidden =
 function showReplay(m) {
   replayInfo = m;
   const b = $('#replay'), v = $('#replayVid'); b.hidden = false;
+  v.loop = false;
   if (!v.src.endsWith(m.url)) v.src = m.url;
   v.currentTime = 0; v.play().catch(() => {});
   $('#rpImpact').style.left = ((m.impact_t - m.t0) / Math.max(.01, m.t1 - m.t0) * 100) + '%';
@@ -278,6 +279,7 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => { if (e.code === 'Space') ptt(false); });
 function closePalette() { $('#palette').hidden = true; $('#cmdInput').value = ''; $('#cmdInput').blur(); }
+$('#commandHint').onclick = () => { $('#palette').hidden = false; $('#cmdInput').focus(); };
 $('#cmdInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.value.trim()) { const v = e.target.value.trim(); say(v); net.send({ type: 'cmd', text: v }); closePalette(); }
 });
@@ -305,11 +307,12 @@ function frame(now) {
       if (S.playing && moments.cur?.reconstruction && S.t >= moments.cur.replay_end) app.local({ playing: false });
       if (presented && (moments.cameraSeeded || Math.abs(presented.time-S.t)<.1)) moments.draw(now, presented.image, shown);
     }
-    timeline.draw(S);
     replayTick();
+    const displayTime = replayInfo ? Math.min(replayInfo.t1, replayInfo.t0 + $('#replayVid').currentTime / replayInfo.factor) : shown.t;
+    timeline.draw(replayInfo ? { ...S, t: displayTime } : S);
     $('#mic').style.setProperty('--amp', voiceLevel().toFixed(3));
-    const d = shown.t - C.impact_t;
-    $('#camTs').textContent = `T+${shown.t.toFixed(2)}s`;
+    const d = displayTime - C.impact_t;
+    $('#camTs').textContent = `T+${displayTime.toFixed(2)}s`;
     $('#camDelta').textContent = `${C.impact?.kind === 'near-miss' ? 'EVENT' : 'IMPACT'} ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(2)}s`;
   }
   requestAnimationFrame(frame);
@@ -317,4 +320,4 @@ function frame(now) {
 boot('connecting…', .02);
 net.start();
 requestAnimationFrame(frame);
-window.MERCY = { S, net, feed, moments, panels, map };
+window.MERCY = { S, net, feed, moments, panels, map, app };

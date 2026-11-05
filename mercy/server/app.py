@@ -14,12 +14,13 @@ import threading
 import time
 from contextlib import asynccontextmanager
 from typing import Optional
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from mercy import config
+from mercy import __version__, config
 from mercy.config import log
 from mercy.state import StateHub
 from mercy.voice.tts import tts
@@ -33,7 +34,7 @@ async def lifespan(_app):
     yield
 
 
-app = FastAPI(title="MERCY", lifespan=lifespan)
+app = FastAPI(title="mercymek", version=__version__, lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -442,7 +443,7 @@ async def execute(cmd: dict, ws: Optional[WebSocket]):
     elif intent == "zoom" and (cmd.get("enhance") or cmd.get("concept") == "license plate"):
         start_enhance(cmd)
     elif intent in ("isolate", "zoom", "trajectory"):
-        if cmd.get("live") or (cmd.get("concept") and cmd["concept"] not in ("car",) and not c.overlay_keys.get(cmd["concept"])):
+        if cmd.get("live") or (not cmd.get("sam_key") and cmd.get("concept") and cmd["concept"] not in ("car",) and not c.overlay_keys.get(cmd["concept"])):
             await live_segment(cmd.get("concept") or cmd.get("clause", ""))
             return
         keys = resolve_objects(cmd)
@@ -753,6 +754,7 @@ async def enhance_flow(cmd: dict):
         await hub.broadcast("enhance", {"status": "failed", "message": f"Could not enhance: {ex}"})
         return
     msg = {"status": "ready", "label": label, "t": round(st.t, 2),
+           "cached": bool(e.get("cache_hit")),
            "images": {k: f"/cases/{c.id}/live/{p.name}" for k, p in e["paths"].items()},
            "frames_used": e["frames_used"], "source_px": e["source_px"], "output_px": e["output_px"], "plate": None}
     if is_plate and os.environ.get("MODEL_API_KEY"):
@@ -865,6 +867,8 @@ async def _startup():
 
 @app.get("/api/tts/{k}")
 async def api_tts(k: str):
+    if not re.fullmatch(r"[0-9a-f]{16}", k):
+        raise HTTPException(404)
     return StreamingResponse(tts.stream(k), media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
 
 
@@ -877,7 +881,7 @@ def api_cases():
 def api_case(cid: str):
     try:
         return Case(cid).bundle()
-    except FileNotFoundError:
+    except (FileNotFoundError, ValueError):
         raise HTTPException(404)
 
 
@@ -888,7 +892,10 @@ def api_status():
 
 @app.get("/cases/{cid}/{path:path}")
 def case_file(cid: str, path: str):
-    d = config.case_dir(cid).resolve()
+    try:
+        d = config.case_dir(cid).resolve()
+    except ValueError:
+        raise HTTPException(404)
     p = (d / path).resolve()
     if d not in p.parents or not p.is_file():
         raise HTTPException(404)
@@ -900,6 +907,18 @@ def case_file(cid: str, path: str):
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
+    # Browsers send Origin; keep API-key-backed commands on this application's
+    # own origin. Native local WebSocket clients may omit the browser header.
+    origin = ws.headers.get("origin")
+    if origin:
+        try:
+            parsed = urlsplit(origin)
+            allowed = parsed.scheme in {"http", "https"} and parsed.netloc.lower() == ws.headers.get("host", "").lower()
+        except ValueError:
+            allowed = False
+        if not allowed:
+            await ws.close(code=1008)
+            return
     await ws.accept()
     hub.clients.add(ws)
     await send_case(ws)
@@ -929,7 +948,7 @@ async def ws_endpoint(ws: WebSocket):
                 try:
                     rt.load(m["id"])
                     await send_case()
-                except FileNotFoundError:
+                except (FileNotFoundError, ValueError):
                     await hub.send(ws, "error", {"message": f"Unknown case {m.get('id')}"})
             elif t == "analyze":
                 start_verdict()

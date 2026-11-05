@@ -82,8 +82,8 @@ def project_box(xz, yaw_deg, dimensions, C, R, K):
 
 @lru_cache(maxsize=1)
 def fitting_library():
-    path=Path(__file__).resolve().parents[2]/'data/models/vehicles/fit-points.json'
-    return json.loads(path.read_text())['models'] if path.exists() else {}
+    path=Path(__file__).resolve().parents[1]/'assets/vehicle-fit-points.json'
+    return json.loads(path.read_text(encoding='utf-8'))['models']
 
 
 def fitting_points(model, yaw_deg):

@@ -19,7 +19,9 @@ hatchback, SUV, crossover, wagon, MPV, fastback, coupe, pickup, van, box truck, 
 motorcycle, a fully domed `rounded_hatchback`, and an upright `offroad_suv` with spare wheel and roof rails.
 Hatchback/SUV/MPV roofs and tailgates use curved lofts rather than the sedan's separate boot.
 `node scripts/export_vehicle_library.mjs` exports the same meshes as GLBs to
-`data/models/vehicles/`. Paint is independent of overlay annotation colors. Plate text comes only from a plate
+`data/models/vehicles/`. The exporter also refreshes the small checked-in
+`mercy/assets/vehicle-fit-points.json` table. Python fitting uses that source asset
+without requiring generated GLBs or a local `data/` directory. Paint is independent of overlay annotation colors. Plate text comes only from a plate
 explicitly associated with that vehicle; unknown characters remain `?`, and unavailable plates stay blank.
 
 Replay uses every source vehicle detection, including cars without a neural-depth track. Positions are fitted to
@@ -315,3 +317,56 @@ The new rounded hatch has a continuous domed shell and curved tail rather than a
 Off-road SUV geometry has an upright cabin, raised chassis, larger tyres, rear spare and roof rails. Backend
 classification, size priors, silhouette points and exported GLBs share all 18 types. The gallery rendered by
 `scripts/preview_vehicle_library.cjs` is in `data/research/ui-vehicles/vehicle-library.png`.
+
+
+## Optional local reconstruction environment
+
+The saved demo needs only the base application environment described in
+[README.md](../README.md). The default generated-environment and remote GPU paths
+are described above. Local VGGT/mesh execution and the earlier AnySplat renderer
+use a separate environment because Open3D requires NumPy below 2.
+Choose the Torch index for your hardware; the example uses Intel XPU. Set your
+credentials in the ignored `.env` using `.env.example` as a template.
+
+```bash
+uv venv --python 3.11 .venv-recon
+uv pip install --python .venv-recon torch torchvision --index-url https://download.pytorch.org/whl/xpu   # or cu124 / cpu
+uv pip install --python .venv-recon "vggt @ git+https://github.com/facebookresearch/vggt.git" "open3d==0.19.0" "numpy<2" trimesh opencv-python pillow huggingface_hub python-dotenv transformers
+uv pip install --python .venv-recon einops jaxtyping omegaconf plyfile dacite safetensors lightning scikit-video matplotlib e3nn colorspacious "numpy<2"
+uv pip install --python .venv-recon openai meta-sam-parser scipy "numpy<2"   # 3D moments: clean plates, vehicle masks
+git clone --depth 1 https://github.com/InternRobotics/AnySplat vendor/AnySplat   # feed-forward splats (MIT); weights lhjiang/anysplat
+git clone https://github.com/Oldcircle/geo-sleuth vendor/geo-sleuth           # geolocation skill (MIT); needs uv
+```
+
+Run new-video admission with a reviewed source manifest before ingesting new
+footage; see **New video requirements** above. To opt into the earlier renderer,
+use `--moments-backend legacy --gpu-backend local` on the ingest command.
+The local VGGT/mesh subprocesses use `.venv-recon`; the server stays in `.venv`.
+
+Sharper 3D moments with [FastGS](https://github.com/fastgs/FastGS) (per-scene training, CUDA only, so on Kaggle):
+
+```bash
+python scripts/fastgs_export.py                  # frames + loss masks + COLMAP cameras -> data/fastgs/mercy_fastgs.zip
+python scripts/fastgs_export.py --clip           # whole clip per case, all vehicles masked -> mercy_fastgs_clip.zip
+# upload it as a private Kaggle dataset, run kaggle/fastgs_moments.ipynb on a T4, download fastgs_out.zip
+python scripts/fastgs_import.py fastgs_out.zip   # replaces the AnySplat world of each moment (kept as *.anysplat.splat)
+```
+
+The earlier renderer replaces three CUDA-oriented dependencies with local
+PyTorch compatibility shims (`vendor/anysplat_shims`) for Intel XPU or CPU inference.
+Outputs are reused unless the relevant stage is forced.
+
+### Earlier photo-layer renderer
+
+- A legacy 3D moment is one video frame placed in 3D at its metric VGGT depth (one camera-facing splat per pixel, depth
+  edges kept sharp with an inpainted skirt behind them), in front of the static world that AnySplat reconstructs from
+  the frames 2.5 s before to 1 s after (vehicles, sky and everything glued to the camera, such as the hood, dashboard
+  reflections and timestamps, removed before fusion; aligned on the same pixels as the VGGT depth and levelled so the
+  local road is y = 0). From the dashcam's viewpoint it is the frame itself; leaving that viewpoint reveals the
+  limits of the original forward-facing capture. What
+  was never seen shows as the sky or road colour.
+- The vehicles in a legacy moment are their own pixels from that frame, moved along their tracked (smoothed) paths for the
+  1.5 s before it; they may turn at most 25°, because a layer is only the side the camera saw. Behind them, Muse Image
+  removed the vehicles from a copy of the frame (the clean plate): only the pixels the vehicles and their shadows
+  covered come from it, with depth from the road plane, and the HUD says that background is AI-filled. It is never
+  evidence. Without a clean plate (no key, or it does not line up with the frame) the vehicles stay frozen.

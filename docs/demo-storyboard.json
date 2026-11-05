@@ -1,0 +1,109 @@
+{
+  "title": "mercymek — Your voice runs the investigation",
+  "revision": 6,
+  "language": "en",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "duration": 180,
+  "shots": [
+    {
+      "id": "00_hook",
+      "duration": 14,
+      "chapter": "Your voice runs the investigation",
+      "case": "london_rearend",
+      "narration": "One dashcam video. Your voice runs the entire investigation. This is mercymek. Just ask: zoom, read the plate, find the location, test what happened, and prepare the report."
+    },
+    {
+      "id": "01_zoom",
+      "duration": 12,
+      "chapter": "Say it. See it.",
+      "case": "london_rearend",
+      "narration": "Zoom in on the silver BMW. No menus to hunt through. Speak naturally, and the system selects the vehicle and brings the evidence closer."
+    },
+    {
+      "id": "02_plate",
+      "duration": 16,
+      "chapter": "Read the plate by voice",
+      "case": "london_rearend",
+      "narration": "Zoom in on the licence plate. It finds the plate, combines nine neighbouring frames, enhances the crop, and reads the characters. Here, the result is L M fifty-eight B L Z, with the original available beside it."
+    },
+    {
+      "id": "03_locate",
+      "duration": 16,
+      "chapter": "Find the location from the video",
+      "case": "london_rearend",
+      "narration": "Find the location of this video. No address entered. No GPS coordinates in this clip. mercymek examines what the camera can see and automatically proposes where the scene took place."
+    },
+    {
+      "id": "04_clues",
+      "duration": 18,
+      "chapter": "The surroundings become location evidence",
+      "case": "london_rearend",
+      "narration": "The surroundings become location evidence. A ten and M twenty-five on the road sign. London and Enfield as destinations. A local business billboard, yellow rear plates, and the road layout. The system combines these clues and checks the named places."
+    },
+    {
+      "id": "05_map",
+      "duration": 16,
+      "chapter": "From visual clues to the map",
+      "case": "london_rearend",
+      "narration": "Open the map. The visual evidence points to the London and Enfield area, around the A ten and M twenty-five. You get the proposed location, a confidence level, an uncertainty radius, and the evidence behind it."
+    },
+    {
+      "id": "06_isolate",
+      "duration": 16,
+      "chapter": "One sentence. Multiple actions.",
+      "case": "london_rearend",
+      "narration": "Isolate the vehicles and rewind to three seconds before impact. One sentence, multiple actions. The vehicles are highlighted and the timeline jumps back. Keep talking to move through the investigation, step by step."
+    },
+    {
+      "id": "07_slowmo",
+      "duration": 9,
+      "chapter": "Inspect the impact by voice",
+      "case": "london_rearend",
+      "narration": "Replay the impact in super slow motion. Inspect the approach at quarter speed using optical-flow interpolation."
+    },
+    {
+      "id": "07b_reconstruction",
+      "duration": 5,
+      "chapter": "Compare the same moment in 3D",
+      "case": "london_rearend",
+      "narration": "Estimated three D, beside the original."
+    },
+    {
+      "id": "08_evidence",
+      "duration": 9,
+      "chapter": "Inspect the evidence",
+      "case": "london_rearend",
+      "narration": "Show the evidence. Original frames, vehicle dossiers, licence plates, and source files, all in one place."
+    },
+    {
+      "id": "09_whatif",
+      "duration": 16,
+      "chapter": "Test a different reaction",
+      "case": "london_rearend",
+      "narration": "What if the camera car had braked one second earlier? The system tests that change against the measured motion. In this scenario, it stops eleven to thirteen metres before the impact point. The collision is avoided."
+    },
+    {
+      "id": "10_report",
+      "duration": 12,
+      "chapter": "Ask for the findings",
+      "case": "london_rearend",
+      "narration": "Who is at fault? Open the findings by voice. See the estimated shares, the measurements, and the reasons behind them, with sources you can inspect."
+    },
+    {
+      "id": "11_paper",
+      "duration": 13,
+      "chapter": "Finish the paperwork by voice",
+      "case": "london_rearend",
+      "narration": "Fill in the accident statement and verify the evidence. The case becomes a structured form, and the evidence hashes are checked. From investigation to paperwork, keep control with your voice."
+    },
+    {
+      "id": "12_close",
+      "duration": 8,
+      "chapter": "mercymek",
+      "case": null,
+      "narration": "mercymek. One conversation, from footage to findings. Your voice runs the investigation."
+    }
+  ]
+}

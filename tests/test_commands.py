@@ -11,6 +11,8 @@ from mercy.voice import commands as C
     ("araçları izole et ve çarpışmadan 3 saniye önceye git", 2),
     ("durdur sonra üstten göster", 2),
     ("who is at fault?", 1),
+    ("fill in the accident statement and verify the evidence", 2),
+    ("show the report and fill in the accident statement", 2),
 ])
 def test_split(text, n):
     assert len(C.split_clauses(text)) == n
@@ -62,3 +64,40 @@ def test_approach_replay_is_a_rule(text):
 def test_approach_rule_leaves_other_replays_alone():
     assert C.rule_intent("replay the impact in super slow motion") == "replay"
     assert C.rule_intent("show the impact in 3D") == "view"
+
+
+def test_short_spoken_vehicle_name_resolves_saved_object():
+    labels = {"silver bmw sedan": "car:3", "dark car ahead": "car:1"}
+    slots = C.zoom_slots("Zoom in on the silver BMW", labels)
+    assert slots["sam_key"] == "car:3"
+    assert not slots.get("live")
+
+
+def test_named_zoom_applies_zoom_without_new_segmentation(monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    from mercy.server import app as server
+
+    async def exercise():
+        patches = []
+        async def patch(value):
+            patches.append(value)
+        async def broadcast(*args):
+            pass
+        async def unexpected_segment(*args):
+            pytest.fail("A saved named vehicle must use its existing object key")
+        monkeypatch.setattr(server.rt, "case", SimpleNamespace(
+            objects=[{"id": "car:3", "label": "Silver BMW sedan"}], overlay_keys={}))
+        monkeypatch.setattr(server.hub, "patch", patch)
+        monkeypatch.setattr(server.hub, "broadcast", broadcast)
+        monkeypatch.setattr(server, "live_segment", unexpected_segment)
+        await server.execute({"intent": "zoom", **C.zoom_slots(
+            "Zoom in on the silver BMW", {"silver bmw sedan": "car:3"})}, None)
+        assert patches == [{"zoom": "car:3", "selected": "car:3"}]
+    asyncio.run(exercise())
+
+
+def test_generic_car_does_not_match_a_bystanders_alias():
+    slots = C.zoom_slots("Zoom in on the car", {"dark car ahead": "car:1"})
+    assert slots["concept"] == "car"
+    assert "sam_key" not in slots

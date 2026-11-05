@@ -77,11 +77,15 @@ class TTS:
 
     def register(self, text: str) -> str | None:
         """Returns the audio key, or None when speech is off or the budget is spent (text is still shown)."""
-        if not self.enabled or not text:
+        if not text:
             return None
         text = self.clean(text)
         k = hashlib.sha1(f"{self.voice}|{self.model}|{text}".encode()).hexdigest()[:16]
-        if not (CACHE / f"{k}.mp3").exists() and self.used + len(text) > self.budget:
+        if (CACHE / f"{k}.mp3").exists():
+            return k
+        if not self.enabled:
+            return None
+        if self.used + len(text) > self.budget:
             log.warning("TTS budget reached (%d chars); replies are text-only", self.used)
             return None
         self.pending[k] = text

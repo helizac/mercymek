@@ -55,7 +55,7 @@ CONCEPTS = {  # short noun phrase sent to SAM -> synonyms
 
 SPLIT_RE = re.compile(r"\s*(?:,|;|\band then\b|\bthen\b|\band\b|\bve\b|\bsonra\b|\bardından\b|\bdaha sonra\b)\s*", re.I)
 VERBS = ("isolate highlight show hide segment rewind go jump seek play pause stop slow speed rotate orbit top view zoom "
-         "focus trace draw analyze analyse who compute generate create make note record remember reset clear start "
+         "focus trace draw analyze analyse who compute generate create make note record remember reset clear start verify fill read replay "
          "freeze resume fast back move turn fly enhance find track open close give display what izole göster gizle git "
          "atla oynat durdur yavaş döndür yakınlaş yakınlaştır analiz oluştur çiz kaydet not sıfırla temizle geri ileri "
          "kim bul aç kapat başlat devam").split()
@@ -127,16 +127,17 @@ def object_slots(c: str, extra_labels: dict[str, str]) -> dict:
         out["object_id"] = 1
     if re.search(r"\b(vehicles|cars|both|araçlar|arabalar|ikisi)\b", lc) and "object_id" not in out:
         out["object_id"] = 0                      # 0 = all involved vehicles
-    # specific scene labels first ("blue hatchback"), then the concept dictionary; an explicit number wins
-    if extra_labels and "object_id" not in out:
-        hit = process.extractOne(lc, list(extra_labels), scorer=fuzz.partial_ratio)
-        if hit and hit[1] >= 85:
-            out["concept"] = hit[0]; out["sam_key"] = extra_labels[hit[0]]
-            return out
-    syn = {s: k for k, v in CONCEPTS.items() for s in v}
+    # Compare the spoken noun phrase with scene aliases. Including the command
+    # verb can hide a shorter name such as "silver BMW" within "silver BMW sedan".
     words = re.sub(r"\b(isolate|highlight|show|segment|zoom|in|on|to|the|focus|track|trace|trajectory|path|of|izole|et|"
                    r"göster|yakınlaş|yörünge|please|me|all|every|braking)\b", " ", lc)
     words = " ".join(words.split())
+    syn = {s: k for k, v in CONCEPTS.items() for s in v}
+    if extra_labels and words and words not in syn and "object_id" not in out:
+        hit = process.extractOne(words, list(extra_labels), scorer=fuzz.partial_ratio)
+        if hit and hit[1] >= 85:
+            out["concept"] = hit[0]; out["sam_key"] = extra_labels[hit[0]]
+            return out
     if words:
         hit = process.extractOne(words, list(syn), scorer=fuzz.WRatio)
         if hit and hit[1] >= 70:

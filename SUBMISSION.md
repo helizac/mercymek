@@ -1,6 +1,6 @@
 # mercymek — submission pack
 
-Meta Global AI Developer Hackathon · Indie track · theme **Build for Your World** (a problem every driver knows firsthand)
+Built in **3 days** for the [Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit) · Indie track · theme **Build for Your World**.
 
 ## One line
 
@@ -42,8 +42,8 @@ You hold Space and talk. The video stays the main screen; every other screen is 
   blueprint is marked as illustration, the plate reader marks unknown characters. The audit rejects a verdict whose
   numbers fall outside the measured ranges. A tool that overclaims is useless as evidence; this one is built to survive a
   sceptical reader.
-* **Cheap**: heavy work happens once per clip (about $1–1.5 of Meta Model API per case); everything after that is a
-  cached, instant conversation.
+* **Cached by design**: heavy reconstruction runs once per clip. Saved scenes and findings are reused locally;
+  live transcription and new model requests still use their respective API services.
 
 ## Meta technology, all five Model API surfaces
 
@@ -61,19 +61,26 @@ Around them: Laya (command intent), RAFT (slow motion), Real-ESRGAN (plates), An
 
 ## Run it (judges)
 
-The repo carries code only; one case's data is 370 MB, so it ships as a release asset.
+The repo carries code only. The prepared source ZIP and two sealed-data archives
+are listed in the [delivery guide](docs/delivery.md). The main data archive contains
+the London case shown in the film plus hero and snow examples; the optional extra archive adds four cases.
+
+Follow the [README quick start](README.md#quick-start) to create and activate a
+Python 3.11 environment and install the hash-locked CPU dependencies. Then run:
 
 ```bash
-git clone <repo-url> mercymek && cd mercymek
-uv venv --python 3.11 .venv && uv pip install --python .venv -e .
-python scripts/pack_demo.py --unpack mercymek-demo-data.zip      # data/cases/hero + cached voice lines
-cp .env.example .env                                             # optional: MODEL_API_KEY enables live voice and verdicts
-python scripts/run_demo.py --case hero --no-viser --open         # http://localhost:8000
+python scripts/pack_demo.py --unpack mercymek-demo-data.zip
+python scripts/pack_demo.py --unpack mercymek-extra-cases.zip    # optional: four more cases
+python scripts/run_demo.py --case london_rearend --no-viser --open
 ```
+
+For live voice and new model requests, copy `.env.example` to `.env` and supply
+your own `MODEL_API_KEY`; add `ELEVENLABS_API_KEY` for uncached spoken replies.
 
 Without any key everything cached works: video, 3D moments, report, map, evidence, slow motion, what-if, statement,
 seal. Type a command with `/` (the typed command line) if there is no microphone.
-`python -m pytest` → 155 tests.
+Use `python -m pip install -e ".[dev]"` followed by `python -m pytest -q -ra`.
+Saved-case and local smoke-fixture tests skip when their data is absent.
 
 ## Honest limits
 
@@ -83,6 +90,17 @@ the scene outside the camera's view is generated and labelled so. mercymek is no
 ---
 
 ## 3-minute demo video (the primary judging artifact)
+
+The edited film is `deliverables/mercymek-3-minute-demo.mp4`: 180 seconds at 1080p,
+with English ElevenLabs narration, burned-in captions, a separate SRT and chapter
+markers. The production script is [docs/demo-storyboard.json](docs/demo-storyboard.json).
+Revision 6 follows one London case: ten real spoken commands, plate reading,
+automatic location inference from visual surroundings without GPS, counterfactuals,
+report, statement and evidence verification. A brief same-frame original/3D
+comparison appears at 1:57–1:59, followed by the actual web-app 3D view at
+1:59–2:02. At 2:02–2:11, a spoken command opens
+the Evidence page with dossiers, the verified plate and source files. The following table is the original live-presentation guide; use
+`docs/demo-storyboard.json` for the finished film.
 
 Record at 1080p, browser full screen, microphone on, ElevenLabs voice audible. Pre-warm: open `?case=hero&view=scene&t=8`
 once so the splats are cached (first load takes ~15 s), then reload to `?case=hero`.
@@ -101,11 +119,13 @@ once so the splats are cached (first load takes ~15 s), then reload to `?case=he
 
 Optional swap for 0:40–1:15 if the 3D load is slow: switch to `cutin_rearend` and say **"Zoom in on the licence plate."**
 
-## Submission checklist (deadline: Nov 4, 9 PM ET — aim for 6 PM)
+## Submission checklist
 
-* [ ] Public GitHub repo, no `.env`, no `data/` (checked by `git ls-files`)
-* [ ] `mercymek-demo-data.zip` (311 MB) uploaded as a release asset; link in the README
-* [ ] 3-minute video recorded and uploaded; link in the portal
+* [x] [Public GitHub repo](https://github.com/helizac/mercymek), no `.env`, no `data/` (checked by `git ls-files`)
+* [x] Source and sealed demo-data ZIPs prepared locally
+* [x] 3-minute video recorded and edited, with English ElevenLabs narration and captions
+* [ ] Data ZIPs uploaded as release assets; hosted links added to the README
+* [ ] Finished video uploaded; hosted link added to the portal
 * [ ] Track: **Indie**; theme: **Build for Your World**
 * [ ] Portal text: paste "One line", "The problem", "What mercymek does" and the Meta table above
-* [ ] Last check on a clean clone: unpack the data, run, open the hero case, say one command
+* [x] Clean extracted install verified without API keys: seven cases, original seals, cached speech, commands and cached plate enhancement

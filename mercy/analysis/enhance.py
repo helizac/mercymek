@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import os
 import pathlib
 import threading
 import urllib.request
@@ -22,6 +23,14 @@ from mercy.config import log
 WEIGHTS_URL = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
 WEIGHTS = config.ROOT / "data" / "models" / "RealESRGAN_x4plus.pth"
 _model, _lock = None, threading.Lock()
+
+
+def _cpu_threads():
+    """Small live crops are slower with a large CPU thread pool (notably on Windows)."""
+    import torch
+    limit = max(1, int(os.environ.get("MERCY_INFERENCE_THREADS", "4")))
+    if torch.get_num_threads() > limit:
+        torch.set_num_threads(limit)
 
 PLATE_SCHEMA = {"type": "object", "additionalProperties": False,
                 "required": ["legible", "text", "confidence", "region", "notes"],
@@ -50,6 +59,7 @@ def esrgan():
 
 def super_resolve(img: np.ndarray, max_side: int = 1200) -> np.ndarray:
     import torch
+    _cpu_threads()
     m = esrgan()
     h, w = img.shape[:2]
     if max(h, w) * 4 > max_side * 2:                     # keep the network input small (speed)
@@ -100,6 +110,7 @@ def refine(ref: np.ndarray, img: np.ndarray) -> np.ndarray:
     corrects what an affine cannot (perspective change across the plate, rolling shutter, small parallax)."""
     import torch
     import torch.nn.functional as F
+    _cpu_threads()
     m = raft()
     if m is None:
         return img
@@ -171,6 +182,26 @@ def enhance(clip: pathlib.Path, fps: float, t: float, box_at, out_dir: pathlib.P
     if not crops:
         raise ValueError("object not visible around this moment")
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Cache the actual input pixels, rather than the requested time or a file's
+    # modification date. It survives a demo ZIP round trip and invalidates when
+    # a crop changes. Hash the outputs too so edited cache files are not trusted.
+    digest = hashlib.sha256(b"mercy-enhance-v1:ecc-affine:raft-small:RealESRGAN-x4plus")
+    for crop in crops:
+        digest.update(str(crop.shape).encode())
+        digest.update(crop.tobytes())
+    cache = out_dir / f"enhance_cache_{digest.hexdigest()}.json"
+    if cache.exists():
+        try:
+            saved = json.loads(cache.read_text(encoding="utf-8"))
+            paths = {k: (out_dir / v).resolve() for k, v in saved["paths"].items()}
+            if (set(paths) == {"raw", "fused", "enhanced"}
+                    and all(p.parent == out_dir.resolve() and p.is_file()
+                            and hashlib.sha256(p.read_bytes()).hexdigest() == saved["hashes"][k]
+                            for k, p in paths.items())):
+                return {"paths": paths, "frames_used": saved["frames_used"],
+                        "source_px": saved["source_px"], "output_px": saved["output_px"], "cache_hit": True}
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
     raw = crops[len(crops) // 2]
     fused, used = fuse(crops) if len(crops) >= 3 else (cv2.resize(raw, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC), 1)
     sr = super_resolve(fused)
@@ -181,8 +212,15 @@ def enhance(clip: pathlib.Path, fps: float, t: float, box_at, out_dir: pathlib.P
         p = out_dir / f"{name}_{k}.png"
         cv2.imwrite(str(p), im)
         paths[k] = p
-    return {"paths": paths, "frames_used": used, "source_px": [raw.shape[1], raw.shape[0]],
-            "output_px": [sr.shape[1], sr.shape[0]]}
+    result = {"paths": paths, "frames_used": used, "source_px": [raw.shape[1], raw.shape[0]],
+              "output_px": [sr.shape[1], sr.shape[0]]}
+    saved = {**result, "paths": {k:p.name for k,p in paths.items()},
+             "hashes": {k:hashlib.sha256(p.read_bytes()).hexdigest() for k,p in paths.items()},
+             "input_sha256": digest.hexdigest(), "method": "ECC affine + RAFT residual alignment + Real-ESRGAN x4"}
+    temporary = cache.with_suffix(".json.part")
+    temporary.write_text(json.dumps(saved, indent=2), encoding="utf-8")
+    temporary.replace(cache)
+    return result
 
 
 def read_plate(img_path: pathlib.Path, timeout: float = 30) -> dict:

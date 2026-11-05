@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import re
 import time
 from contextlib import contextmanager
 
@@ -51,7 +52,13 @@ if not log.handlers:
 
 
 def case_dir(case_id: str) -> pathlib.Path:
-    return CASES_DIR / case_id
+    if not isinstance(case_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", case_id):
+        raise ValueError("Case ID must be a simple directory name")
+    root = CASES_DIR.resolve()
+    target = (root / case_id).resolve()
+    if target.parent != root:
+        raise ValueError("Case must stay inside CASES_DIR")
+    return target
 
 
 @contextmanager

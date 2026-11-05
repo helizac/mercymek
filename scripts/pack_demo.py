@@ -10,6 +10,7 @@ the cached spoken phrases, so the demo runs offline with no API keys.
 from __future__ import annotations
 
 import argparse
+import json
 import pathlib
 import sys
 import zipfile
@@ -36,28 +37,62 @@ def case_files(d: pathlib.Path, files: set[str], dirs: set[str]):
 
 def pack(cases: list[str], out: pathlib.Path):
     from mercy.server.app import CASE_DIRS, CASE_FILES
+    from mercy.analysis.seal import verify
+    # A shareable case must retain its original signed manifest. Omitting a
+    # server-side intermediate breaks verification on the recipient's machine.
+    entries = []
+    has_nexar = False
+    for cid in cases:
+        d = ROOT / "data" / "cases" / cid
+        if not (d / "meta.json").exists():
+            raise ValueError(f"unknown case {cid}")
+        has_nexar |= "nexar" in (d / "meta.json").read_text(encoding="utf-8").lower()
+        selected = {rel: p for p, rel in case_files(
+            d, CASE_FILES | {"verdict.json", "claims.json", "moments.json"}, CASE_DIRS)}
+        if (d / "seal.json").exists():
+            result = verify(d)
+            if not result["intact"]:
+                raise ValueError(f"{cid}: evidence seal is not intact; refusing to package changed evidence")
+            for item in json.loads((d / "seal.json").read_text(encoding="utf-8"))["files"]:
+                rel = item["path"]
+                p = (d / rel).resolve()
+                if d.resolve() not in p.parents:
+                    raise ValueError(f"unsafe sealed path: {rel}")
+                selected[rel] = p
+        entries.extend((p, f"data/cases/{cid}/{rel}") for rel, p in sorted(selected.items()))
+    notices = [(ROOT/"third_party/NEXAR_LICENSE.txt", "data/licenses/NEXAR_LICENSE.txt"),
+               (ROOT/"THIRD_PARTY_NOTICES.md", "data/licenses/THIRD_PARTY_NOTICES.md"),
+               (ROOT/"docs/demo-credits.md", "data/licenses/DEMO_CREDITS.md")]
+    if has_nexar and not notices[0][0].is_file():
+        raise ValueError("Nexar redistribution requires third_party/NEXAR_LICENSE.txt")
+    entries.extend((p, name) for p, name in notices if p.is_file())
+    out.parent.mkdir(parents=True, exist_ok=True)
+    temporary = out.with_suffix(out.suffix + ".part")
     n = size = 0
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-        for cid in cases:
-            d = ROOT / "data" / "cases" / cid
-            if not (d / "meta.json").exists():
-                sys.exit(f"unknown case {cid}")
-            # tracks.json etc. are in CASE_FILES; the three extra files below are read server-side only
-            for p, rel in case_files(d, CASE_FILES | {"verdict.json", "claims.json", "moments.json"}, CASE_DIRS):
-                z.write(p, f"data/cases/{cid}/{rel}")
-                n += 1
-                size += p.stat().st_size
+    with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+        for p, name in entries:
+            z.write(p, name)
+            n += 1
+            size += p.stat().st_size
         tts = ROOT / "data" / "tts_cache"
         if tts.exists():
             for p in tts.iterdir():
                 if p.is_file() and p.name != "usage.json":
                     z.write(p, f"data/tts_cache/{p.name}")
                     n += 1
+    temporary.replace(out)
     print(f"{n} files, {size / 1e6:.0f} MB raw -> {out} ({out.stat().st_size / 1e6:.0f} MB)")
 
 
 def unpack(zip_path: pathlib.Path):
     with zipfile.ZipFile(zip_path) as z:
+        # Only demo data belongs in this archive, never arbitrary project files.
+        for name in z.namelist():
+            rel = pathlib.PurePosixPath(name.replace("\\", "/"))
+            if (rel.is_absolute() or ".." in rel.parts or len(rel.parts) < 3
+                    or rel.parts[0] != "data" or rel.parts[1] not in {"cases", "tts_cache", "licenses"}
+                    or any(":" in part for part in rel.parts)):
+                raise ValueError(f"unexpected archive path: {name}")
         z.extractall(ROOT)
     print(f"unpacked into {ROOT / 'data'}")
 

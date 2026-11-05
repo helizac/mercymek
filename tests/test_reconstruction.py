@@ -13,13 +13,25 @@ from mercy.ingest.source_quality import validate
 
 def test_vehicle_registry_includes_distinct_round_and_offroad_bodies():
     from mercy.generation.vehicles import TYPES, DIMENSIONS, SCHEMA
-    library=json.loads((Path(__file__).resolve().parents[1]/'data/models/vehicles/index.json').read_text())
-    assert set(TYPES)=={m['type'] for m in library['models']}
-    assert SCHEMA['properties']['body_type']['enum']==TYPES
+    from mercy.ingest.vehicle_scene import fitting_library
+    library = fitting_library()
+    assert set(TYPES) == set(library)
+    assert SCHEMA['properties']['body_type']['enum'] == TYPES
     for kind in ['rounded_hatchback','offroad_suv']:
-        model=next(m for m in library['models'] if m['type']==kind)
-        assert model['dimensions_m']==DIMENSIONS[kind]
-        assert (Path(__file__).resolve().parents[1]/'data/models/vehicles'/model['file']).stat().st_size>1000
+        assert library[kind]['dimensions_m'] == DIMENSIONS[kind]
+        assert len(library[kind]['points']) > 8
+
+
+@pytest.mark.skipif(not (Path(__file__).resolve().parents[1]/'data/models/vehicles/index.json').exists(),
+                    reason='optional GLB export: run node scripts/export_vehicle_library.mjs')
+def test_optional_exported_vehicle_glbs_match_the_registry():
+    from mercy.generation.vehicles import TYPES, DIMENSIONS
+    folder=Path(__file__).resolve().parents[1]/'data/models/vehicles'
+    library=json.loads((folder/'index.json').read_text())
+    assert set(TYPES)=={m['type'] for m in library['models']}
+    for model in library['models']:
+        assert model['dimensions_m']==DIMENSIONS[model['type']]
+        assert (folder/model['file']).stat().st_size>1000
 
 
 def test_road_calibration_rejects_collapsed_geometry():
