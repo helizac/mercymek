@@ -59,7 +59,6 @@ archives, the film and local environments remain outside Git.
 
 Local checks ran on Windows with Python 3.11. Optional live model/GPU reconstruction
 paths are separate from the saved-demo checks. The application remains a local
-research/demo server with shared state and no user authentication, as documented
-in [SECURITY.md](../SECURITY.md).
+research/demo server with shared state and no user authentication.
 
 Follow [releasing.md](releasing.md) and [delivery.md](delivery.md) for publication.

@@ -2,8 +2,7 @@
 
 The application version is **1.0.0** in `pyproject.toml` and `mercy/__init__.py`.
 This initial public release is prepared locally and has not yet been tagged.
-Video edit revisions (v1–v6), model names and the historical iteration headings in
-[CHANGES.md](CHANGES.md) are separate from application versions.
+Video edit revisions (v1–v6) and model names are separate from application versions.
 
 ## 1.0.0 — initial public release, prepared
 

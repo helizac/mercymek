@@ -105,7 +105,7 @@ Copy `.env.example` to `.env` and supply your own credentials:
 
 Meta, ElevenLabs, Hugging Face and Kaggle credentials stay on the server. Keep
 `.env` and private signing keys out of Git. The app runs locally with shared case
-state and no user authentication; see [SECURITY.md](SECURITY.md).
+state and no user authentication.
 
 For uncached plate enhancement, install `python -m pip install -e ".[enhance]"`.
 Its model weights download on first use. New ingest and media processing require
@@ -210,7 +210,5 @@ Keep the Nexar notice and case-specific attribution with redistributed data.
 - [Hackathon submission](SUBMISSION.md)
 - [Demo, delivery assets and reproduction](docs/delivery.md)
 - [Reconstruction implementation and advanced setup](docs/reconstruction.md)
-- [Security and credential handling](SECURITY.md)
 - [Changelog](CHANGELOG.md) and [release procedure](docs/releasing.md)
 - [Public release review](docs/public-release-review.md)
-- [Historical implementation decisions](CHANGES.md)

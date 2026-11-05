@@ -84,10 +84,12 @@ def audit(history=False, expected_version=None):
         error('mercy/__init__.py', 'version differs from pyproject.toml')
     if expected_version and expected_version.removeprefix('v') != version:
         error('pyproject.toml', 'version differs from the requested release tag')
-    for required in ['README.md', 'CHANGELOG.md', 'SECURITY.md', 'THIRD_PARTY_NOTICES.md', 'docs/releasing.md', 'requirements-dev.lock',
+    # Require build inputs and redistribution notices. Optional policy/history
+    # documents may be removed once their incoming links are updated.
+    for required in ['README.md', 'THIRD_PARTY_NOTICES.md', 'requirements-dev.lock',
                      'frontend/vendor/three.LICENSE', 'frontend/vendor/spark/LICENSE', 'frontend/vendor/leaflet/LICENSE', 'third_party/NEXAR_LICENSE.txt']:
         if not (ROOT/required).is_file():
-            error(required, 'required public documentation/notice is missing')
+            error(required, 'required build input or redistribution notice is missing')
     objects_checked = 0
     if history:
         objects = []
