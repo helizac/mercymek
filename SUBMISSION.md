@@ -86,45 +86,6 @@ Saved-case and local smoke-fixture tests skip when their data is absent.
 
 Monocular video: scale comes from an assumed 1.2–1.5 m camera height, hidden bodywork and deformation are estimated, and
 the scene outside the camera's view is generated and labelled so. mercymek is not a legal determination.
-
----
-
-## 3-minute demo video (the primary judging artifact)
-
-The edited film is `deliverables/mercymek-3-minute-demo.mp4`: 180 seconds at 1080p,
-with English ElevenLabs narration, burned-in captions, a separate SRT and chapter
-markers. The production script is [docs/demo-storyboard.json](docs/demo-storyboard.json).
-Revision 6 follows one London case: ten real spoken commands, plate reading,
-automatic location inference from visual surroundings without GPS, counterfactuals,
-report, statement and evidence verification. A brief same-frame original/3D
-comparison appears at 1:57–1:59, followed by the actual web-app 3D view at
-1:59–2:02. At 2:02–2:11, a spoken command opens
-the Evidence page with dossiers, the verified plate and source files. The following table is the original live-presentation guide; use
-`docs/demo-storyboard.json` for the finished film.
-
-Record at 1080p, browser full screen, microphone on, ElevenLabs voice audible. Pre-warm: open `?case=hero&view=scene&t=8`
-once so the splats are cached (first load takes ~15 s), then reload to `?case=hero`.
-
-| Time | On screen | You say / do |
-| --- | --- | --- |
-| 0:00–0:15 | Hero clip playing, the crash happens | Voice-over: "Every day two drivers argue about what a dashcam clip shows. mercymek turns the clip into an investigation you can talk to." |
-| 0:15–0:40 | Hold Space | **"Isolate the vehicles and rewind to three seconds before impact."** (masks light up both cars, the video jumps) |
-| 0:40–1:15 | 3D moments | **"Show the impact in 3D."**, then **"Replay the approach."** — the lead-up flies through the reconstructed street with the cars on their tracked paths. Keep camera moves small (a gentle drag); wide orbits reveal what a single forward-facing clip never saw. Voice-over: "The world is generated from the footage; the cars are complete models on their tracked paths." |
-| 1:15–1:30 | Video | **"Replay the impact in super slow motion."** |
-| 1:30–1:50 | Video, what-if | **"What if the camera car had been going 30 km/h?"** — the answer is spoken, the clip replays from the hazard. |
-| 1:50–2:20 | Report | **"Who is at fault?"** — fault shares as ranges, integrity audit. Then (live): **"Objection: the blue car cut in without signalling."** and let the judge answer. |
-| 2:20–2:35 | Map | **"Where did this happen?"** |
-| 2:35–2:50 | Report | **"Fill in the accident statement."**, then **"Verify the evidence."** — "All 248 files match the seal." |
-| 2:50–3:00 | Title card | "Five Meta models, one question: what really happened? mercymek." |
-
-Optional swap for 0:40–1:15 if the 3D load is slow: switch to `cutin_rearend` and say **"Zoom in on the licence plate."**
-
-## Submission checklist
-
-* [x] [Public GitHub repo](https://github.com/helizac/mercymek), no `.env`, no `data/` (checked by `git ls-files`)
-* [x] Source and sealed demo-data ZIPs prepared locally
-* [x] 3-minute video recorded and edited, with English ElevenLabs narration and captions
-* [ ] Data ZIPs uploaded as release assets; hosted links added to the README
 * [ ] Finished video uploaded; hosted link added to the portal
 * [ ] Track: **Indie**; theme: **Build for Your World**
 * [ ] Portal text: paste "One line", "The problem", "What mercymek does" and the Meta table above
