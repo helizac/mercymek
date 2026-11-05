@@ -208,7 +208,6 @@ and media retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTIC
 Keep the Nexar notice and case-specific attribution with redistributed data.
 
 - [Hackathon submission](SUBMISSION.md)
-- [Demo, delivery assets and reproduction](docs/delivery.md)
 - [Reconstruction implementation and advanced setup](docs/reconstruction.md)
 - [Changelog](CHANGELOG.md) and [release procedure](docs/releasing.md)
 - [Public release review](docs/public-release-review.md)

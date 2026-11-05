@@ -61,4 +61,4 @@ Local checks ran on Windows with Python 3.11. Optional live model/GPU reconstruc
 paths are separate from the saved-demo checks. The application remains a local
 research/demo server with shared state and no user authentication.
 
-Follow [releasing.md](releasing.md) and [delivery.md](delivery.md) for publication.
+Follow [releasing.md](releasing.md) for publication.

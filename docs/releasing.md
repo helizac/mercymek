@@ -45,9 +45,8 @@ Git history. It reports locations, never secret values.
    git push origin v1.0.0
    ```
 
-6. Create a GitHub Release from that tag. Attach the assets listed in
-   [delivery.md](delivery.md), including the two data ZIPs, final MP4, subtitles,
-   `CREDITS.txt`, source ZIP and checksums. Case/media licenses and attribution
+6. Create a GitHub Release from that tag. Attach the two data ZIPs, final MP4,
+   subtitles, `CREDITS.txt`, source ZIP and checksums. Case/media licenses and attribution
    must accompany the data; do not attach `.env`, private signing keys or the
    ignored production work directory.
 7. Add the actual hosted release/demo links to README and the submission portal.

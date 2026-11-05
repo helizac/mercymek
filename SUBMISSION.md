@@ -61,9 +61,9 @@ Around them: Laya (command intent), RAFT (slow motion), Real-ESRGAN (plates), An
 
 ## Run it (judges)
 
-The repo carries code only. The prepared source ZIP and two sealed-data archives
-are listed in the [delivery guide](docs/delivery.md). The main data archive contains
-the London case shown in the film plus hero and snow examples; the optional extra archive adds four cases.
+The repo carries code only; prepared case data is distributed separately.
+The main data archive contains London, hero and snow examples; the optional extra
+archive adds four cases.
 
 Follow the [README quick start](README.md#quick-start) to create and activate a
 Python 3.11 environment and install the hash-locked CPU dependencies. Then run:
